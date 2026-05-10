@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+const { useState, useEffect, useRef, useCallback } = React;
 
 // ── Default question bank ──────────────────────────────────────────────────
 const DEFAULT_QUESTIONS = [
@@ -1415,3 +1415,6 @@ const CSS = `
   .muted { color: var(--muted); font-size: 14px; }
   .center { text-align: center; padding: 40px; }
 `;
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />); // Replace 'App' with the name of your main function
