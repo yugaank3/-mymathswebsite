@@ -190,92 +190,231 @@ function StepDots({ total, current, completed, onSelect, onReveal }) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TEACHER PANEL — AI auto-solve
-// ═══════════════════════════════════════════════════════════════════════════
+// // ═══════════════════════════════════════════════════════════════════════════
+// // TEACHER PANEL — AI auto-solve
+// // ═══════════════════════════════════════════════════════════════════════════
+// function TeacherPanel({ questions, onSave, onBack }) {
+//   const [question, setQuestion] = useState("");
+//   const [aiResult, setAiResult] = useState(null);   // parsed AI response
+//   const [loading, setLoading]   = useState(false);
+//   const [error, setError]       = useState("");
+//   const [saved, setSaved]       = useState(false);
+
+//   const solve = async () => {
+//     if (!question.trim()) return;
+//     setLoading(true);
+//     setError("");
+//     setAiResult(null);
+
+//     const prompt = `You are a mathematics professor. Solve the following Jacobian problem step by step.
+
+// Problem: ${question}
+
+// Return ONLY a valid JSON object (no markdown, no backticks, no explanation outside the JSON) with this exact structure:
+// {
+//   "question": "<restate the question clearly>",
+//   "solution": "<the final answer as a compact expression>",
+//   "steps": [
+//     {
+//       "expression": "<LHS = RHS, e.g. du/dx = 2x>",
+//       "hint": "<a one-sentence hint guiding the student to find this step without giving the answer>",
+//       "marks": 1
+//     }
+//   ]
+// }
+
+// Rules:
+// - Each step must be a single partial derivative computation or the final Jacobian determinant calculation.
+// - The expression field must be in the form "LHS = RHS" using plain ASCII math (use ^ for powers, * for multiply, d for partial ∂).
+// - Keep hints helpful but do NOT reveal the answer in the hint.
+// - Break the solution into logical steps (typically 4-6 steps for a Jacobian problem).`;
+
+//     try {
+//       const response = await fetch("https://api.anthropic.com/v1/messages", {
+//         method: "POST",
+//         headers: { "Content-Type": "application/json" },
+//         body: JSON.stringify({
+//           model: "claude-sonnet-4-20250514",
+//           max_tokens: 1000,
+//           messages: [{ role: "user", content: prompt }],
+//         }),
+//       });
+
+//       const data = await response.json();
+//       const text = data.content
+//         .filter((b) => b.type === "text")
+//         .map((b) => b.text)
+//         .join("");
+
+//       // Strip any accidental markdown fences
+//       const clean = text.replace(/```json|```/gi, "").trim();
+//       const parsed = JSON.parse(clean);
+//       setAiResult(parsed);
+//     } catch (e) {
+//       setError("Could not parse AI response. Please try again.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleSave = () => {
+//     if (!aiResult) return;
+//     onSave({ ...aiResult, id: Date.now() });
+//     setSaved(true);
+//     setQuestion("");
+//     setAiResult(null);
+//     setTimeout(() => setSaved(false), 2500);
+//   };
+
+//   const updateStep = (idx, field, val) => {
+//     setAiResult((r) => {
+//       const steps = [...r.steps];
+//       steps[idx] = { ...steps[idx], [field]: val };
+//       return { ...r, steps };
+//     });
+//   };
+
+//   return (
+//     <div className="panel teacher-panel">
+//       <div className="panel-header">
+//         <button className="back-btn" onClick={onBack}>← Back</button>
+//         <h2>Teacher Question Bank</h2>
+//         <span className="badge">{questions.length} Questions</span>
+//       </div>
+
+//       <div className="teacher-grid">
+//         {/* ── Left: existing questions ── */}
+//         <div className="existing-list">
+//           <h3>Existing Questions</h3>
+//           {questions.length === 0 && <p className="muted">No questions yet.</p>}
+//           {questions.map((q, i) => (
+//             <div key={q.id} className="q-card">
+//               <span className="q-num">Q{i + 1}</span>
+//               <p>{q.question}</p>
+//               <span className="step-count">{q.steps.length} steps</span>
+//             </div>
+//           ))}
+//         </div>
+
+//         {/* ── Right: AI solve form ── */}
+//         <div className="add-form">
+//           <h3>Add Question via AI</h3>
+
+//           <label>Problem Statement</label>
+//           <textarea
+//             rows={3}
+//             placeholder="e.g. Find the Jacobian of u = x² + y², v = 2xy with respect to x and y"
+//             value={question}
+//             onChange={(e) => setQuestion(e.target.value)}
+//           />
+
+//           <button
+//             className="submit-btn ai-solve-btn"
+//             onClick={solve}
+//             disabled={loading || !question.trim()}
+//           >
+//             {loading ? (
+//               <span className="spinner-row"><span className="spinner" />Solving…</span>
+//             ) : (
+//               "✦ Auto-Solve with AI"
+//             )}
+//           </button>
+
+//           {error && <div className="wrong-notice">{error}</div>}
+
+//           {/* ── AI result preview ── */}
+//           {aiResult && (
+//             <div className="ai-result">
+//               <div className="ai-result-header">
+//                 <span className="ai-badge">✦ AI Generated</span>
+//                 <span className="muted" style={{fontSize:12}}>You can edit before saving</span>
+//               </div>
+
+//               <label>Question (editable)</label>
+//               <textarea
+//                 rows={2}
+//                 value={aiResult.question}
+//                 onChange={(e) => setAiResult((r) => ({ ...r, question: e.target.value }))}
+//               />
+
+//               <label>Final Solution (editable)</label>
+//               <input
+//                 value={aiResult.solution}
+//                 onChange={(e) => setAiResult((r) => ({ ...r, solution: e.target.value }))}
+//               />
+
+//               <label style={{marginTop:8}}>Steps</label>
+//               {aiResult.steps.map((step, idx) => (
+//                 <div key={idx} className="step-form-card">
+//                   <div className="step-form-head">
+//                     <span>Step {idx + 1}</span>
+//                   </div>
+//                   <input
+//                     placeholder="Expression (LHS = RHS)"
+//                     value={step.expression}
+//                     onChange={(e) => updateStep(idx, "expression", e.target.value)}
+//                   />
+//                   <input
+//                     placeholder="Hint"
+//                     value={step.hint}
+//                     onChange={(e) => updateStep(idx, "hint", e.target.value)}
+//                   />
+//                 </div>
+//               ))}
+
+//               <button className="submit-btn" onClick={handleSave}>
+//                 {saved ? "✓ Saved!" : "Save to Question Bank"}
+//               </button>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// } The AI Version
+
+// ═══════════════════════════════════════════════
+// TEACHER PANEL — manual form
+// ═══════════════════════════════════════════════
+const EMPTY_STEP = { expression: "", hint: "" };
+
 function TeacherPanel({ questions, onSave, onBack }) {
-  const [question, setQuestion] = useState("");
-  const [aiResult, setAiResult] = useState(null);   // parsed AI response
-  const [loading, setLoading]   = useState(false);
-  const [error, setError]       = useState("");
-  const [saved, setSaved]       = useState(false);
+  const [form, setForm] = useState({
+    question: "",
+    solution: "",
+    steps: [{ ...EMPTY_STEP }],
+  });
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
-  const solve = async () => {
-    if (!question.trim()) return;
-    setLoading(true);
-    setError("");
-    setAiResult(null);
+  const setField = (field, val) => setForm(f => ({ ...f, [field]: val }));
 
-    const prompt = `You are a mathematics professor. Solve the following Jacobian problem step by step.
+  const updateStep = (idx, field, val) =>
+    setForm(f => {
+      const steps = [...f.steps];
+      steps[idx] = { ...steps[idx], [field]: val };
+      return { ...f, steps };
+    });
 
-Problem: ${question}
+  const addStep = () =>
+    setForm(f => ({ ...f, steps: [...f.steps, { ...EMPTY_STEP }] }));
 
-Return ONLY a valid JSON object (no markdown, no backticks, no explanation outside the JSON) with this exact structure:
-{
-  "question": "<restate the question clearly>",
-  "solution": "<the final answer as a compact expression>",
-  "steps": [
-    {
-      "expression": "<LHS = RHS, e.g. du/dx = 2x>",
-      "hint": "<a one-sentence hint guiding the student to find this step without giving the answer>",
-      "marks": 1
-    }
-  ]
-}
-
-Rules:
-- Each step must be a single partial derivative computation or the final Jacobian determinant calculation.
-- The expression field must be in the form "LHS = RHS" using plain ASCII math (use ^ for powers, * for multiply, d for partial ∂).
-- Keep hints helpful but do NOT reveal the answer in the hint.
-- Break the solution into logical steps (typically 4-6 steps for a Jacobian problem).`;
-
-    try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          messages: [{ role: "user", content: prompt }],
-        }),
-      });
-
-      const data = await response.json();
-      const text = data.content
-        .filter((b) => b.type === "text")
-        .map((b) => b.text)
-        .join("");
-
-      // Strip any accidental markdown fences
-      const clean = text.replace(/```json|```/gi, "").trim();
-      const parsed = JSON.parse(clean);
-      setAiResult(parsed);
-    } catch (e) {
-      setError("Could not parse AI response. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const removeStep = (idx) =>
+    setForm(f => ({ ...f, steps: f.steps.filter((_, i) => i !== idx) }));
 
   const handleSave = () => {
-    if (!aiResult) return;
-    onSave({ ...aiResult, id: Date.now() });
+    if (!form.question.trim()) { setError("Please enter a question."); return; }
+    if (!form.solution.trim()) { setError("Please enter the final solution."); return; }
+    if (form.steps.some(s => !s.expression.trim())) { setError("All steps need an expression."); return; }
+    setError("");
+    onSave({ ...form, steps: form.steps.map(s => ({ ...s, marks: 1 })), id: Date.now() });
     setSaved(true);
-    setQuestion("");
-    setAiResult(null);
+    setForm({ question: "", solution: "", steps: [{ ...EMPTY_STEP }] });
     setTimeout(() => setSaved(false), 2500);
   };
 
-  const updateStep = (idx, field, val) => {
-    setAiResult((r) => {
-      const steps = [...r.steps];
-      steps[idx] = { ...steps[idx], [field]: val };
-      return { ...r, steps };
-    });
-  };
-
   return (
-    <div className="panel teacher-panel">
+    <div className="panel">
       <div className="panel-header">
         <button className="back-btn" onClick={onBack}>← Back</button>
         <h2>Teacher Question Bank</h2>
@@ -283,90 +422,78 @@ Rules:
       </div>
 
       <div className="teacher-grid">
-        {/* ── Left: existing questions ── */}
         <div className="existing-list">
-          <h3>Existing Questions</h3>
+          <h3>Saved Questions</h3>
           {questions.length === 0 && <p className="muted">No questions yet.</p>}
           {questions.map((q, i) => (
             <div key={q.id} className="q-card">
               <span className="q-num">Q{i + 1}</span>
               <p>{q.question}</p>
-              <span className="step-count">{q.steps.length} steps</span>
+              <span className="step-count">{q.steps.length} steps · {q.steps.reduce((a,s)=>a+s.marks,0)} marks</span>
             </div>
           ))}
         </div>
 
-        {/* ── Right: AI solve form ── */}
         <div className="add-form">
-          <h3>Add Question via AI</h3>
+          <h3>Add New Question</h3>
 
-          <label>Problem Statement</label>
-          <textarea
-            rows={3}
-            placeholder="e.g. Find the Jacobian of u = x² + y², v = 2xy with respect to x and y"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-          />
+          <div className="form-group">
+            <label><span className="label-icon">❓</span> Problem Statement</label>
+            <textarea rows={3}
+              placeholder="e.g. Find the Jacobian J = ∂(u,v)/∂(x,y) where u = x² + y² and v = 2xy"
+              value={form.question}
+              onChange={e => setField("question", e.target.value)} />
+          </div>
 
-          <button
-            className="submit-btn ai-solve-btn"
-            onClick={solve}
-            disabled={loading || !question.trim()}
-          >
-            {loading ? (
-              <span className="spinner-row"><span className="spinner" />Solving…</span>
-            ) : (
-              "✦ Auto-Solve with AI"
-            )}
-          </button>
+          <div className="form-group">
+            <label><span className="label-icon">✅</span> Final Solution</label>
+            <input
+              placeholder="e.g.  J = 4x² − 4y²"
+              value={form.solution}
+              onChange={e => setField("solution", e.target.value)} />
+            <span className="form-hint">Shown to students only after completion or when ∑ is clicked.</span>
+          </div>
 
-          {error && <div className="wrong-notice">{error}</div>}
+          <div className="steps-divider">
+            <span>Steps</span>
+            <span className="steps-divider-line"/>
+            <button className="add-step-btn" onClick={addStep}>+ Add Step</button>
+          </div>
 
-          {/* ── AI result preview ── */}
-          {aiResult && (
-            <div className="ai-result">
-              <div className="ai-result-header">
-                <span className="ai-badge">✦ AI Generated</span>
-                <span className="muted" style={{fontSize:12}}>You can edit before saving</span>
+          {form.steps.map((step, idx) => (
+            <div key={idx} className="step-form-card">
+              <div className="step-form-head">
+                <span className="step-form-num">Step {idx + 1}</span>
+                {form.steps.length > 1 && (
+                  <button className="remove-step-btn" onClick={() => removeStep(idx)}>✕</button>
+                )}
               </div>
 
-              <label>Question (editable)</label>
-              <textarea
-                rows={2}
-                value={aiResult.question}
-                onChange={(e) => setAiResult((r) => ({ ...r, question: e.target.value }))}
-              />
+              <div className="step-field">
+                <label className="step-field-label"><span className="label-icon">∂</span> Expected Expression</label>
+                <input
+                  placeholder="e.g.  ∂u/∂x = 2x"
+                  value={step.expression}
+                  onChange={e => updateStep(idx, "expression", e.target.value)} />
+                <span className="form-hint">Write as LHS = RHS. Students type only the RHS value.</span>
+              </div>
 
-              <label>Final Solution (editable)</label>
-              <input
-                value={aiResult.solution}
-                onChange={(e) => setAiResult((r) => ({ ...r, solution: e.target.value }))}
-              />
-
-              <label style={{marginTop:8}}>Steps</label>
-              {aiResult.steps.map((step, idx) => (
-                <div key={idx} className="step-form-card">
-                  <div className="step-form-head">
-                    <span>Step {idx + 1}</span>
-                  </div>
-                  <input
-                    placeholder="Expression (LHS = RHS)"
-                    value={step.expression}
-                    onChange={(e) => updateStep(idx, "expression", e.target.value)}
-                  />
-                  <input
-                    placeholder="Hint"
-                    value={step.hint}
-                    onChange={(e) => updateStep(idx, "hint", e.target.value)}
-                  />
-                </div>
-              ))}
-
-              <button className="submit-btn" onClick={handleSave}>
-                {saved ? "✓ Saved!" : "Save to Question Bank"}
-              </button>
+              <div className="step-field">
+                <label className="step-field-label"><span className="label-icon">💡</span> Hint</label>
+                <input
+                  placeholder="e.g.  Differentiate u = x² + y² with respect to x, treating y as constant."
+                  value={step.hint}
+                  onChange={e => updateStep(idx, "hint", e.target.value)} />
+                <span className="form-hint">Guide the student without revealing the answer.</span>
+              </div>
             </div>
-          )}
+          ))}
+
+          {error && <div className="wrong-notice" style={{marginTop:4}}>{error}</div>}
+
+          <button className="submit-btn save-btn" onClick={handleSave}>
+            {saved ? "✓ Question Saved!" : "Save Question"}
+          </button>
         </div>
       </div>
     </div>
@@ -1099,55 +1226,30 @@ const CSS = `
   }
   .add-step-btn:hover { background: rgba(31,111,235,0.15); }
 
-  .ai-solve-btn {
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px; width: 100%;
-    background: linear-gradient(135deg, #e6a817, #c47c0a);
-  }
-  .ai-solve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+ 
 
-  .spinner-row { display: flex; align-items: center; gap: 8px; }
-  .spinner {
-    width: 14px; height: 14px;
-    border: 2px solid rgba(0,0,0,0.3);
-    border-top-color: #000;
-    border-radius: 50%;
-    animation: spin .7s linear infinite;
-    display: inline-block;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  
 
-  .ai-result {
-    border: 1px solid rgba(230,168,23,0.35);
-    border-radius: 10px;
-    padding: 16px;
-    display: flex; flex-direction: column; gap: 10px;
-    background: rgba(230,168,23,0.04);
-  }
-  .ai-result-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 4px;
-  }
-  .ai-badge {
-    font-size: 11px;
-    background: rgba(230,168,23,0.15);
-    border: 1px solid rgba(230,168,23,0.35);
-    border-radius: 20px;
-    padding: 3px 10px;
-    color: var(--accent);
-  }
+  .step-form-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 
-  .step-form-card {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px;
-    display: flex; flex-direction: column; gap: 8px;
-  }
-  .step-form-head {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 12px; color: var(--muted);
-  }
+  .step-form-head { display: flex; justify-content: space-between; align-items: center; }
+
+  .step-form-num { font-family: 'Playfair Display', serif; font-size: 13px; color: var(--accent); font-weight: 600; }
+  .remove-step-btn { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--red); cursor: pointer; font-size: 12px; padding: 2px 7px; transition: background .15s; }
+  .remove-step-btn:hover { background: rgba(248,81,73,0.1); }
+  .step-field { display: flex; flex-direction: column; gap: 5px; }
+  .step-field-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .label-icon { font-style: normal; }
+  .form-hint { font-size: 11px; color: var(--muted); line-height: 1.5; font-style: italic; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .steps-divider { display: flex; align-items: center; gap: 10px; margin: 4px 0; }
+  .steps-divider span:first-child { font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); white-space: nowrap; }
+  .steps-divider-line { flex: 1; height: 1px; background: var(--border); }
+  .add-step-btn { background: transparent; border: 1px solid #1f6feb; border-radius: 6px; color: #58a6ff; padding: 5px 12px; font-size: 12px; cursor: pointer; transition: background .15s; white-space: nowrap; }
+  .add-step-btn:hover { background: rgba(31,111,235,0.15); }
+  .save-btn { align-self: stretch; text-align: center; margin-top: 4px; }
+
+  
   .remove-btn {
     background: none; border: none; color: var(--red); cursor: pointer; font-size: 14px;
   }
