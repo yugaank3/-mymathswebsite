@@ -850,7 +850,7 @@ function Landing({ onStudent, onTeacher }) {
         <h1 className="landing-title">Jacobian Step-by-Step Evaluator</h1>
         <p className="landing-sub">
           An interactive portal for practising partial derivatives and Jacobian
-          matrices — designed for PCCOE students.
+          matrices — designed for PCCOE's Smart students.
         </p>
 
         <div className="landing-cards">
@@ -898,7 +898,7 @@ export default function App() {
         <header className="app-header">
           <div className="header-logo">
             <div className="logo-placeholder">
-              <span>PCCOE</span>
+              <span><img src="pccoeLogo.png" alt=" Pimpri-Chinchwad College of Engineering Logo" width="50" height="50"></img></span>
             </div>
           </div>
           <div className="header-title">
@@ -933,7 +933,7 @@ export default function App() {
 
         {/* ── Footer ── */}
         <footer className="app-footer">
-          <span>Guided by <strong>Sanjay Mapari</strong></span>
+          <span>Guided by <strong>Sanjay Mapari</strong> Crafted by <strong>Yugaank & Team</strong> </span>
           <span className="footer-sep">·</span>
           <span>PCCOE Mathematics Portal</span>
           <span className="footer-sep">·</span>
