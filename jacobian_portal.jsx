@@ -150,7 +150,7 @@ function JacobianMatrix({ rows }) {
 // ── Audio helper ──────────────────────────────────────────────────────────
 function playSound(type) {
   try {
-    const audio = new Audio(`/${type}.mp3`);
+    const audio = new Audio(`/${type}.wav`);
     audio.volume = 0.6;
     audio.play().catch(() => {});
   } catch (_) {}
@@ -937,7 +937,7 @@ export default function App() {
           <span className="footer-sep">·</span>
           <span>PCCOE Mathematics Portal</span>
           <span className="footer-sep">·</span>
-          <span>Engineering Mathematics II</span>
+          <span>Multivariate Calculus</span>
         </footer>
       </div>
     </>
